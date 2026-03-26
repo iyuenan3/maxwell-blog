@@ -1,6 +1,5 @@
 ---
 import '../styles/global.css';
-import { SiteData } from 'astro:content';
 
 interface Props {
   title: string;
@@ -32,10 +31,10 @@ const { title, description } = Astro.props;
           
           <!-- 导航菜单 -->
           <div class="hidden md:flex items-center space-x-6">
-            <a href="/" class="text-gray-700 hover:text-primary font-medium transition-colors">首页</a>
-            <a href="/blog" class="text-gray-700 hover:text-primary font-medium transition-colors">文章</a>
-            <a href="/about" class="text-gray-700 hover:text-primary font-medium transition-colors">关于</a>
-            <a href="/services" class="text-gray-700 hover:text-primary font-medium transition-colors">服务</a>
+            <a href="/" class="text-gray-700 hover:text-[#667eea] font-medium transition-colors">首页</a>
+            <a href="/blog" class="text-gray-700 hover:text-[#667eea] font-medium transition-colors">文章</a>
+            <a href="/about" class="text-gray-700 hover:text-[#667eea] font-medium transition-colors">关于</a>
+            <a href="/services" class="text-gray-700 hover:text-[#667eea] font-medium transition-colors">服务</a>
           </div>
           
           <!-- 移动端菜单按钮 -->
@@ -49,10 +48,10 @@ const { title, description } = Astro.props;
         <!-- 移动端菜单 -->
         <div class="md:hidden hidden py-4" id="mobile-menu">
           <div class="flex flex-col space-y-3">
-            <a href="/" class="text-gray-700 hover:text-primary font-medium">首页</a>
-            <a href="/blog" class="text-gray-700 hover:text-primary font-medium">文章</a>
-            <a href="/about" class="text-gray-700 hover:text-primary font-medium">关于</a>
-            <a href="/services" class="text-gray-700 hover:text-primary font-medium">服务</a>
+            <a href="/" class="text-gray-700 hover:text-[#667eea] font-medium">首页</a>
+            <a href="/blog" class="text-gray-700 hover:text-[#667eea] font-medium">文章</a>
+            <a href="/about" class="text-gray-700 hover:text-[#667eea] font-medium">关于</a>
+            <a href="/services" class="text-gray-700 hover:text-[#667eea] font-medium">服务</a>
           </div>
         </div>
       </nav>
@@ -93,12 +92,12 @@ const { title, description } = Astro.props;
             <h3 class="text-lg font-bold mb-4">联系我们</h3>
             <ul class="text-gray-400 text-sm space-y-2">
               <li>
-                <a href="https://github.com/iyuenan3" target="_blank" class="hover:text-accent transition-colors">
+                <a href="https://github.com/iyuenan3" target="_blank" class="hover:text-[#f093fb] transition-colors">
                   GitHub: iyuenan3
                 </a>
               </li>
               <li>
-                <a href="https://linkedin.com/in/iyuenan3" target="_blank" class="hover:text-accent transition-colors">
+                <a href="https://linkedin.com/in/iyuenan3" target="_blank" class="hover:text-[#f093fb] transition-colors">
                   LinkedIn: Maxwell Li
                 </a>
               </li>
