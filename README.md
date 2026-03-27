@@ -1,17 +1,23 @@
-# CareerCompass WordPress Theme
+# Beep Clone WordPress Theme
 
 > **一个 Agent 和一个懒人的博客主题**  
-> 版本：1.0.0 | 作者：Agent-Max & Maxwell Li
+> 版本：3.0.0 | 作者：Agent-Max & Maxwell Li  
+> 风格：1:1 抄袭 WordPress.com Beep 主题
 
 ---
 
 ## 📖 项目介绍
 
-CareerCompass 是一个专为技术博客设计的 WordPress 子主题，基于 [Underscores (_s)](https://underscores.me/) 构建。
+**Beep Clone** 是一个极客风格的 WordPress 主题，1:1 抄袭 WordPress.com 的付费主题 [Beep](https://wordpress.com/theme/beep)。
+
+灵感来自 "code is poetry"，这是一个为欣赏代码之美的人设计的极客主题。它模仿终端提示符和代码编辑器的风格，采用深色配色方案和等宽字体。
 
 ### 特色
 
-- 🎨 **CareerCompass 配色方案** - 蓝紫渐变 (#667eea → #764ba2)
+- 🖥️ **终端/代码编辑器风格** - 极客专属，仿佛在看代码
+- ⌨️ **等宽字体** - Roboto Mono + Noto Sans Mono CJK SC
+- 🎨 **深色主题** - 深色背景 (#1a1a1a) + 鲜艳点缀
+- 🌈 **动态强调色** - 博客首页（绿色）、文章页（橙色）、页面（黄色）
 - 📱 **完全响应式** - 完美支持移动、平板、桌面
 - ⚡ **轻量级** - 原生 CSS 和 JavaScript，无构建步骤
 - 🌐 **SEO 友好** - HTML5 语义化标签
@@ -32,22 +38,22 @@ CareerCompass 是一个专为技术博客设计的 WordPress 子主题，基于 
 
 1. **下载主题**
    ```bash
-   git clone https://github.com/iyuenan3/maxwell-blog.git careercompass
+   git clone https://github.com/iyuenan3/maxwell-blog.git beep-clone
    ```
 
-2. **安装父主题**
-   - 下载 [Underscores (_s)](https://underscores.me/)
-   - 上传到 `wp-content/themes/underscores/`
+2. **上传到 WordPress**
+   - 将 `beep-clone` 文件夹上传到 `wp-content/themes/`
+   - 或者在 WordPress 后台：外观 → 主题 → 添加 → 上传主题
 
 3. **激活主题**
-   - 登录 WordPress 后台
    - 外观 → 主题
-   - 找到 "CareerCompass"
-   - 点击"激活"
+   - 找到 "Beep Clone"
+   - 点击"启用"
 
 4. **配置菜单**
    - 外观 → 菜单
    - 创建主菜单
+   - 添加页面（首页、技术笔记、AI 实验、生活记录、归档、关于）
    - 设置菜单位置为"主菜单"
 
 ---
@@ -58,9 +64,28 @@ CareerCompass 是一个专为技术博客设计的 WordPress 子主题，基于 
 
 ```css
 :root {
-  --cc-primary-500: #667eea;      /* 主色 */
-  --cc-secondary-800: #764ba2;    /* 辅色 */
-  --cc-accent-500: #f093fb;       /* 强调色 */
+  /* 深色背景 - 终端风格 */
+  --beep-bg-dark: #1a1a1a;
+  --beep-bg-darker: #0d0d0d;
+  --beep-bg-light: #2a2a2a;
+  
+  /* 文字颜色 */
+  --beep-text-primary: #e0e0e0;
+  --beep-text-secondary: #a0a0a0;
+  --beep-text-muted: #666666;
+  
+  /* 强调色 - 根据页面类型变化 */
+  --beep-accent-blog: #10B981;    /* 亮绿色 - 博客首页 */
+  --beep-accent-post: #F97316;    /* 亮橙色 - 文章页 */
+  --beep-accent-page: #EAB308;    /* 亮黄色 - 页面 */
+  
+  /* 代码风格颜色 */
+  --beep-code-green: #10B981;
+  --beep-code-orange: #F97316;
+  --beep-code-yellow: #EAB308;
+  --beep-code-blue: #3B82F6;
+  --beep-code-purple: #8B5CF6;
+  --beep-code-red: #EF4444;
 }
 ```
 
@@ -68,8 +93,8 @@ CareerCompass 是一个专为技术博客设计的 WordPress 子主题，基于 
 
 ```css
 :root {
-  --cc-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans CJK SC', sans-serif;
-  --cc-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --beep-font-mono: 'Roboto Mono', 'Noto Sans Mono CJK SC', monospace;
+  --beep-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
 }
 ```
 
@@ -78,7 +103,7 @@ CareerCompass 是一个专为技术博客设计的 WordPress 子主题，基于 
 ## 📁 文件结构
 
 ```
-careercompass/
+beep-clone/
 ├── style.css              # 主题声明 + 样式
 ├── functions.php          # 主题功能
 ├── header.php             # 页眉
@@ -87,31 +112,29 @@ careercompass/
 ├── index.php              # 文章列表
 ├── single.php             # 文章页面
 ├── page.php               # 页面模板
+├── blog.php               # 博客归档页面
 ├── assets/
 │   ├── images/            # 图片资源
-│   │   ├── logo1.png      # 3D 场景插画
-│   │   ├── logo2.png      # 完整 Logo
 │   │   ├── favicon.png    # 站点图标
-│   │   └── max.jpg        # Agent-Max 头像
-│   ├── js/
-│   │   └── navigation.js  # 导航脚本
-│   └── css/               # 样式文件
-├── inc/                   # 辅助文件
-└── languages/             # 国际化文件
+│   │   └── ...
+│   └── js/
+│       └── navigation.js  # 导航脚本
+└── README.md              # 本文档
 ```
 
 ---
 
 ## 🛠️ 开发指南
 
-### 自定义配色
+### 自定义颜色
 
 编辑 `style.css` 中的 CSS 变量：
 
 ```css
 :root {
-  --cc-primary-500: #你的颜色;
-  --cc-secondary-800: #你的颜色;
+  --beep-accent-blog: #你的颜色;
+  --beep-accent-post: #你的颜色;
+  --beep-accent-page: #你的颜色;
 }
 ```
 
@@ -128,12 +151,12 @@ add_action('wp_head', 'my_custom_function');
 
 ### 创建子主题
 
-1. 创建新目录 `wp-content/themes/careercompass-child/`
+1. 创建新目录 `wp-content/themes/beep-clone-child/`
 2. 创建 `style.css`：
    ```css
    /*
-   Theme Name: CareerCompass Child
-   Template: careercompass
+   Theme Name: Beep Clone Child
+   Template: beep-clone
    */
    ```
 3. 创建 `functions.php`：
@@ -149,7 +172,24 @@ add_action('wp_head', 'my_custom_function');
 
 ## 📝 更新日志
 
-### 1.0.0 (2026-03-27)
+### 3.0.0 (2026-03-27) - Beep Clone
+
+- ✨ 1:1 抄袭 WordPress.com Beep 主题
+- 🎨 深色终端风格
+- ⌨️ Roboto Mono 等宽字体
+- 🌈 动态强调色（绿/橙/黄）
+- 🖥️ 代码块风格卡片
+- > 终端提示符风格（">" 前缀）
+- ✨ 光标动画效果
+
+### 2.0.0 (2026-03-27) - Beep 风格
+
+- 🎨 参考 Beep 主题风格
+- ⌨️ 等宽字体
+- 📋 文章分类导航
+- 🃏 粗边框卡片设计
+
+### 1.0.0 (2026-03-27) - 初始版本
 
 - ✨ 初始版本发布
 - 🎨 CareerCompass 配色方案
@@ -189,7 +229,8 @@ add_action('wp_head', 'my_custom_function');
 - [WordPress.org](https://wordpress.org/)
 - [Underscores (_s)](https://underscores.me/)
 - [WordPress 主题开发手册](https://developer.wordpress.org/themes/)
+- [WordPress.com Beep 主题](https://wordpress.com/theme/beep)
 
 ---
 
-**CareerCompass** - 一个 Agent 和一个懒人的博客主题 ❤️
+**Beep Clone** - 代码即诗歌 🖥️
