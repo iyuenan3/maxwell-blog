@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>告别跨会话失忆</title>
+</head>
+<body>
+<!--
+{
+  "title": "告别跨会话失忆",
+  "date": "2026-03-28",
+  "author": "Agent-Max & Maxwell Li",
+  "categories": [
+    "技术笔记"
+  ],
+  "tags": [
+    "AI",
+    "OpenClaw"
+  ],
+  "status": "draft"
+}
+-->
+<h1>告别跨会话失忆</h1>
+<blockquote></blockquote>
+<p>写在前面：这不是又一篇”XX 工具安装教程”，而是一个关于<strong>AI 如何记住经验</strong>的探索记录。如果你也受够了每次新会话都要重新解释上下文，这篇文章可能对你有帮助。</p>
+<hr />
+<h2>一、痛点：为什么 100 万 tokens 还是不够？</h2>
+<p>OpenClaw 的上下文窗口是 <strong>100 万 tokens</strong>，相当于 70-80 万汉字。理论上，这足够容纳 2000 轮对话。</p>
+<p>但实际使用中，我发现三个问题：</p>
+<h3>1.1 线性增长的诅咒</h3>
+<p>对话越长，上下文越大。即使有自动压缩，也只是<strong>推迟</strong>问题，不是<strong>解决</strong>问题。</p>
+<pre><code>第 1 轮：15K tokens
+第 100 轮：80K tokens
+第 500 轮：400K tokens → 接近上限
+</code></pre>
+<h3>1.2 跨会话失忆</h3>
+<p>最头疼的不是单会话太长，而是<strong>新会话开始后，之前的经验全部清零</strong>。</p>
+<pre><code>Session A（昨天）:
+- 解决了 libGL.so.1 导入错误
+- 安装了 libgl1 包
+- 配置了 LD_LIBRARY_PATH
+
+Session B（今天）:
+用户：&quot;ImportError: libGL.so.1&quot;
+Agent：&quot;让我帮你查查...可能是缺少 OpenGL 库&quot;
+</code></pre>
+<p>同样的问题，重新走一遍排查流程。<strong>昨天的经验，今天用不上</strong>。</p>
+<h3>1.3 知识孤岛</h3>
+<p>OpenClaw 的 <code>self-improving-agent</code> 技能会把经验写到 <code>MEMORY.md</code>，但这些记录是<strong>孤立的文本片段</strong>：</p>
+<pre><code>## 2026-03-27
+- 安装 libgl1 解决了 ImportError
+- 配置了 dashscope API
+</code></pre>
+<p>没有关联，没有结构，检索全靠关键词匹配。</p>
+<hr />
+<h2>二、解决方案：知识图谱记忆系统</h2>
+<h3>2.1 什么是 graph-memory？</h3>
+<p><a href="https://github.com/adoresever/graph-memory">graph-memory</a> 是一个 OpenClaw 插件，核心思想是：</p>
+<blockquote></blockquote>
+<p><strong>把对话内容提取成结构化知识图谱，而不是简单总结文本。</strong></p>
+<h3>2.2 工作原理</h3>
+<pre><code>用户对话 → LLM 提取三元组 → 存入 SQLite → PageRank 排名 → 召回注入
+    │
+    ├── 节点类型：TASK（做了什么）、SKILL（怎么做）、EVENT（出了什么问题）
+    ├── 边类型：USED_SKILL、SOLVED_BY、REQUIRES、PATCHES
+    └── 社区检测：自动聚类相关技能（Docker 集群、Python 集群等）
+</code></pre>
+<h3>2.3 核心优势</h3>
+<table class="wp-block-table">
+<thead>
+<tr>
+<th>能力</th>
+<th>传统压缩</th>
+<th>graph-memory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>**跨会话**</td>
+<td>❌ 会话重置后清零</td>
+<td>✅ 自动 recall</td>
+</tr>
+<tr>
+<td>**知识关联**</td>
+<td>❌ 线性文本</td>
+<td>✅ 图结构连接</td>
+</tr>
+<tr>
+<td>**智能召回**</td>
+<td>❌ 全文搜索</td>
+<td>✅ PPR 动态排名</td>
+</tr>
+<tr>
+<td>**压缩率**</td>
+<td>~50%</td>
+<td>~75%</td>
+</tr>
+</tbody>
+</table>
+**关键差异：** graph-memory 不是”记住对话”，而是”记住知识”。
+<hr />
+<h2>三、安装实战</h2>
+<h3>3.1 环境准备</h3>
+<pre><code># 安装 pnpm（如果还没有）
+npm install -g pnpm
+
+# 安装 graph-memory
+npm install -g graph-memory
+</code></pre>
+<h3>3.2 配置 openclaw.json</h3>
+<p>编辑 <code>~/.openclaw/openclaw.json</code>，添加两部分配置：</p>
+<pre><code>{
+  &quot;plugins&quot;: {
+    &quot;slots&quot;: {
+      &quot;contextEngine&quot;: &quot;graph-memory&quot;
+    },
+    &quot;entries&quot;: {
+      &quot;graph-memory&quot;: {
+        &quot;enabled&quot;: true,
+        &quot;config&quot;: {
+          &quot;embedding&quot;: {
+            &quot;baseURL&quot;: &quot;https://dashscope.aliyuncs.com/compatible-mode/v1&quot;,
+            &quot;apiKey&quot;: &quot;sk-xxx&quot;,
+            &quot;model&quot;: &quot;text-embedding-v4&quot;,
+            &quot;dimensions&quot;: 1024
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<blockquote></blockquote>
+<p>⚠️ <strong>注意</strong>：<code>plugins.slots.contextEngine</code> 必须设置，否则不会摄入消息。</p>
+<h3>3.3 重启并验证</h3>
+<pre><code>openclaw gateway restart
+
+# 查看日志
+tail -f /tmp/openclaw/*.log | grep &quot;graph-memory&quot;
+
+# 应该看到：
+# [graph-memory] vector search ready
+</code></pre>
+<h3>3.4 检查数据库</h3>
+<pre><code># 查看消息摄入
+sqlite3 ~/.openclaw/graph-memory.db &quot;SELECT COUNT(*) FROM gm_messages;&quot;
+
+# 查看知识节点（需要 7 轮对话后才有）
+sqlite3 ~/.openclaw/graph-memory.db &quot;SELECT COUNT(*) FROM gm_nodes;&quot;
+</code></pre>
+<hr />
+<h2>四、踩坑记录</h2>
+<h3>4.1 pnpm 报错</h3>
+<pre><code>pnpm openclaw plugins install graph-memory
+# ERR_PNPM_NO_IMPORTER_MANIFEST_FOUND
+# No package.json was found in &quot;/home/admin/.openclaw&quot;
+</code></pre>
+<p><strong>原因</strong>：pnpm 需要在有 <code>package.json</code> 的目录运行，但 <code>~/.openclaw</code> 不是 npm 项目。</p>
+<p><strong>解决</strong>：直接用 <code>npm install -g</code>。</p>
+<h3>4.2 dimensions 配错</h3>
+<pre><code>// ❌ 错误配置
+&quot;dimensions&quot;: 512
+
+// ✅ 正确配置
+&quot;dimensions&quot;: 1024
+</code></pre>
+<p><code>text-embedding-v4</code> 输出 1024 维向量，配成 512 会导致验证失败。</p>
+<h3>4.3 baseUrl vs baseURL</h3>
+<p>这是最隐蔽的坑：</p>
+<pre><code>// ❌ 不识别（但无错误提示）
+&quot;baseUrl&quot;: &quot;https://...&quot;
+
+// ✅ 正确
+&quot;baseURL&quot;: &quot;https://...&quot;
+</code></pre>
+<p><strong>影响</strong>：配置了 embedding 但静默失败，回退到 FTS5 关键词搜索。</p>
+<p><strong>调试耗时</strong>：约 30 分钟。</p>
+<p><strong>后续行动</strong>：已提交 <a href="https://github.com/adoresever/graph-memory/issues/31">Issue #31</a> 建议同时支持两种写法。</p>
+<hr />
+<h2>五、社区贡献</h2>
+<h3>5.1 发现问题</h3>
+<p>OpenClaw 官方配置约定是 <code>baseUrl</code>（小驼峰），但 graph-memory 用的是 <code>baseURL</code>（大写 URL）。</p>
+<table class="wp-block-table">
+<thead>
+<tr>
+<th>项目</th>
+<th>配置键</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OpenClaw 官方</td>
+<td>`baseUrl`</td>
+</tr>
+<tr>
+<td>graph-memory</td>
+<td>`baseURL`</td>
+</tr>
+<tr>
+<td>大多数插件</td>
+<td>`baseUrl`</td>
+</tr>
+</tbody>
+</table>
+<h3>5.2 提交 Issue</h3>
+<p>Issue 标题：<strong>Support both <code>baseUrl</code> and <code>baseURL</code> in config</strong></p>
+<p>核心诉求：</p>
+<ul>
+<li>同时支持两种写法</li>
+<li>向后兼容</li>
+<li>与 OpenClaw 约定对齐</li>
+</ul>
+<p>建议代码：</p>
+<pre><code>const baseURL = config.baseURL ?? config.baseUrl;
+</code></pre>
+<h3>5.3 开源参与的意义</h3>
+<p>这不仅仅是一个配置键的问题：</p>
+<ul>
+<li>✅ <strong>让后来者少踩坑</strong> — 30 分钟的调试时间，可能帮到几十个人</li>
+<li>✅ <strong>推动项目改进</strong> — 小改动，大影响</li>
+<li>✅ <strong>建立社区连接</strong> — 从使用者变成贡献者</li>
+</ul>
+<hr />
+<h2>六、预期效果</h2>
+<h3>6.1 知识提取（每 7 轮对话）</h3>
+<pre><code>用户：&quot;ImportError: libGL.so.1&quot;
+Agent：&quot;安装 libgl1：sudo apt install libgl1&quot;
+
+→ 提取三元组：
+EVENT: &quot;ImportError: libGL.so.1&quot;
+  └─ SOLVED_BY ─→ SKILL: &quot;安装 libgl1&quot;
+</code></pre>
+<h3>6.2 跨会话召回</h3>
+<pre><code>新会话中：
+用户：&quot;OpenGL 导入失败&quot;
+
+→ graph-memory 召回：
+[相关节点] SKILL: &quot;安装 libgl1&quot; (PageRank: 0.85)
+[原始片段] &quot;sudo apt install libgl1 解决了 ImportError&quot;
+</code></pre>
+<h3>6.3 社区聚类</h3>
+<pre><code>社区 #1: Docker 部署
+├─ SKILL: docker build
+├─ SKILL: docker run
+└─ EVENT: 端口冲突
+
+社区 #2: Python 环境
+├─ SKILL: conda create
+├─ SKILL: pip install
+└─ EVENT: 依赖冲突
+</code></pre>
+<hr />
+<h2>七、适用场景</h2>
+<h3>✅ 推荐</h3>
+<table class="wp-block-table">
+<thead>
+<tr>
+<th>场景</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>长期运行的 agent</td>
+<td>经验持续积累</td>
+</tr>
+<tr>
+<td>多项目并行</td>
+<td>跨项目知识复用</td>
+</tr>
+<tr>
+<td>技术问题解决</td>
+<td>Bug→Solution 关联</td>
+</tr>
+<tr>
+<td>团队协作</td>
+<td>共享知识库</td>
+</tr>
+</tbody>
+</table>
+<h3>❌ 不推荐</h3>
+<table class="wp-block-table">
+<thead>
+<tr>
+<th>场景</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>短期会话（<100 轮）</td>
+<td>收益不明显</td>
+</tr>
+<tr>
+<td>追求简单稳定</td>
+<td>增加配置复杂度</td>
+</tr>
+<tr>
+<td>原文保留刚需</td>
+<td>选 lossless-claw</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>八、总结</h2>
+<h3>8.1 核心收获</h3>
+<ul>
+<li><strong>graph-memory 解决的是”跨会话学习”问题</strong> — 不是简单的上下文压缩</li>
+<li><strong>配置细节决定成败</strong> — 一个大小写浪费 30 分钟</li>
+<li><strong>社区贡献是双向受益</strong> — 提 issue 的过程也是深度理解</li>
+</ul>
+<h3>8.2 下一步计划</h3>
+<ul>
+<li>[ ] 运行 7 天，观察知识提取效果</li>
+<li>[ ] 测试跨会话召回准确率</li>
+<li>[ ] 如果 Issue 被接受，提交 PR</li>
+<li>[ ] 探索与 lossless-claw 组合可能性</li>
+</ul>
+<h3>8.3 最后的思考</h3>
+<p>AI 的记忆系统，本质上是在回答一个问题：</p>
+<blockquote></blockquote>
+<p><strong>如何让 AI 从”每次都是新人”变成”越用越有经验”？</strong></p>
+<p>graph-memory 给了一个答案：<strong>结构化知识 + 智能召回</strong>。</p>
+<p>但这不是终点。未来可能会有更多方案：</p>
+<ul>
+<li>向量数据库 + RAG</li>
+<li>长期记忆 + 短期记忆分层</li>
+<li>多 agent 共享知识库</li>
+</ul>
+<p><strong>探索才刚刚开始。</strong></p>
+<hr />
+<h2>附录</h2>
+<h3>A. 参考链接</h3>
+<ul>
+<li>graph-memory: https://github.com/adoresever/graph-memory</li>
+<li>lossless-claw: https://github.com/martian-engineering/lossless-claw</li>
+<li>OpenClaw Docs: https://docs.openclaw.ai/concepts/session</li>
+<li>Issue #31: https://github.com/adoresever/graph-memory/issues/31</li>
+</ul>
+<h3>B. 相关命令速查</h3>
+<pre><code># 安装
+npm install -g graph-memory
+
+# 验证
+sqlite3 ~/.openclaw/graph-memory.db &quot;SELECT COUNT(*) FROM gm_messages;&quot;
+
+# 查看日志
+tail -f /tmp/openclaw/*.log | grep &quot;graph-memory&quot;
+
+# 手动触发维护
+gm_maintain
+</code></pre>
+
+</body>
+</html>
