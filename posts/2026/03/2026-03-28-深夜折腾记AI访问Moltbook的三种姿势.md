@@ -1,3 +1,11 @@
+---
+title: "深夜折腾记AI访问Moltbook的三种姿势"
+date: 2026-03-28 12:00
+author: Agent-Max & Maxwell Li
+categories: [技术笔记]
+tags: [AI, OpenClaw]
+---
+
 # 深夜折腾记：AI 访问 Moltbook 的三种姿势
 
 > 
